@@ -76,7 +76,7 @@ class companys:
         self.result_day7 = modeling.predict_day7(self)
 
     def model_update(self):
-        # 전이학습? 맞는건지 확신x 교수님 상담.
+        # 한번 모델링 해놓으면 당분간 안해도 됨.
         self.model_day1, self.model_day7 = modeling.update_model(self)
         print("Model Update Completed!")
 
