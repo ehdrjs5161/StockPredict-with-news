@@ -7,9 +7,7 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from sklearn.preprocessing import MinMaxScaler
 from matplotlib import pyplot as plt
 import matplotlib.font_manager as fm
-font_loc = '../file/Hancom Gothic Regular.ttf'
-font_name=fm.FontProperties(fname=font_loc).get_name()
-plt.rc('font', family=font_name)
+import json
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
@@ -17,8 +15,6 @@ if gpus:
     tf.config.experimental.set_memory_growth(gpus[0], True)
   except RuntimeError as e:
     print(e)
-
-print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 
 def create_dataset(data, term, predict_days):
     x_list, y_list = [], []
@@ -34,9 +30,9 @@ def create_dataset(data, term, predict_days):
 def load_model(code, predict_day):
     try:
         if predict_day == 1:
-            model = keras.models.load_model("../model/"+code)
+            model = keras.models.load_model("model/"+code)
         elif predict_day == 7:
-            model = keras.models.load_model("../model_day7/"+code)
+            model = keras.models.load_model("model_day7/"+code)
         else:
             print("Deep Learning Model Not Found Error")
         return model
@@ -59,6 +55,14 @@ def modeling_day7(batch, term, features):
     model.add(keras.layers.LSTM(512))
     model.add(keras.layers.Dense(7, activation='linear'))
     model.compile(optimizer='adam', loss='mse')
+    return model
+
+def modeling_nlp(max_words):
+    model = keras.Sequential()
+    model.add(keras.layers.Embedding(max_words, 100))
+    model.add(keras.layers.LSTM(128))
+    model.add(keras.layers.Dense(3, activation="softmax"))
+    model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=['accuracy'])
     return model
 
 def model_educate(company, term, batch, predict_day):
@@ -96,10 +100,10 @@ def model_educate(company, term, batch, predict_day):
     # # history = model.fit(train_x, train_y, epoch=100, batch_size=10, callbacks=[early_stop, check_point])
     if predict_day == 1:
         history = model.fit(train_x, train_y, epochs=30, batch_size=10)
-        model.save("../model/" + company.code)
+        model.save("model/" + company.code)
     elif predict_day == 7:
         history = model.fit(train_x, train_y, epochs=30, batch_size=10)
-        model.save("../model_day7/" + company.code)
+        model.save("model_day7/" + company.code)
     else:
         print("predict_day Setting Error!")
 
@@ -123,12 +127,16 @@ def predict_day1(company):
     Scaler.fit(data)
     normed_data = Scaler.fit_transform(data)
     x_data, y_data = create_dataset(normed_data, 28, 1)
+
     predictions = model.predict(x_data, batch_size=1)
     real_prediction =method.inverseTransform(Scaler, predictions)
+    real_prediction = list(real_prediction)
 
-    view_day1(timeline, real_prediction, close, company.name)
-
-    return {'Time': timeline, 'Price': close, 'Predict': real_prediction}
+    time = []
+    for i in range(0, len(timeline)):
+        time.append(method.date_to_str(timeline.iloc[i]))
+    result = {'Time': time, 'Price': close, 'Predict': real_prediction}
+    return result
 
 def predict_day7(company):
     model = company.model_day7
@@ -145,10 +153,12 @@ def predict_day7(company):
 
     predictions = model.predict(x_data, batch_size=1)
     real_prediction = method.inverseTransform(Scaler, predictions)
-
-    view_day7(timeline, real_prediction, close, company.name)
-
-    return {'Time': timeline, 'Price': close, 'Predict': real_prediction}
+    real_prediction = list(real_prediction)
+    time =[]
+    for i in range(0, len(timeline)):
+        time.append(method.date_to_str(timeline.iloc[i]))
+    result = {'Time': time, 'Price': close, 'Predict': real_prediction}
+    return result
 
 def view_day1(time, predict, actual, name):
     plt.figure(figsize=(16, 9))

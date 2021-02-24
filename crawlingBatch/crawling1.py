@@ -46,7 +46,7 @@ def parsing(name, begin, end):
             for i in news:
                 date_result.append(date)
                 title = i.attrs['title']
-                title = re.sub('[-=+,#/\?:≑^$.@*’ \"※~&%ㆍ!	‧』\\‘|\(\)\[\]\<\>`\'…\"\“》·]', ' ', title)
+                # title = re.sub('[-=+,#/\?:≑^$.@*’ \"※~&%ㆍ!	‧』\\‘|\(\)\[\]\<\>`\'…\"\“》·]', ' ', title)
                 title_result.append(title)
                 link_result.append(i.attrs['href'])
             page = page + 1

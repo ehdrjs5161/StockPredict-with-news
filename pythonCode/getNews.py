@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 import time
 import datetime
+from pythonCode import NLP
 from bs4 import BeautifulSoup
 
 def day_range(begin, end):
@@ -49,7 +50,7 @@ def parsing(name, begin, end):
         time.sleep(0.0001)
 
     frame = pd.DataFrame({'Date': date_result, 'Title': title_result, 'Url': link_result})
-
+    frame = NLP.predict(frame)
     return frame
 
 

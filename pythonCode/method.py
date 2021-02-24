@@ -20,17 +20,22 @@ def search_code(company, frame):
 
     return code
 
+def code_to_name(frame, code):
+    name = frame['종목코드'] == int(code)
+    name = list(frame['기업명'][name])
+    return name[0]
+
 def load_data(company):
     code = set_code(company.code)
     try:
-        if not os.path.isfile("../price/"+code+".csv"):
+        if not os.path.isfile("price/"+code+".csv"):
             price = getPrice.stock_price(code, "2012-01-01")
-            price.to_csv("../price/"+code+'.csv', encoding="UTF-8")
-        if not os.path.isfile("../news/"+code+".csv"):
+            price.to_csv("price/"+code+'.csv', encoding="UTF-8")
+        if not os.path.isfile("news/"+code+".csv"):
             today = method.date_to_str(datetime.datetime.today())
             news = getNews(company.name, begin="2012-01-01", end=today)
-        news = pd.read_csv("../news/"+code+".csv", encoding="utf-8")[['Date', 'Title', 'Url']]
-        price = pd.read_csv("../price/"+code+".csv", encoding="utf-8")[['Date', 'High', 'Low', 'Open', 'Close', 'Volume']]
+        news = pd.read_csv("news/"+code+".csv", encoding="utf-8")[['Date', 'Title', 'Url']]
+        price = pd.read_csv("price/"+code+".csv", encoding="utf-8")[['Date', 'High', 'Low', 'Open', 'Close', 'Volume']]
 
         return news, price
 
@@ -107,3 +112,16 @@ def inverseTransform_day7(Scaler, normed_data):
         real_data.append(temp)
 
     return real_data
+
+def rate(last_price, predict, day):
+    if day == 1:
+        rate = 100 * (predict - last_price[-1])/last_price[-1]
+        return rate
+    else:
+        rate = []
+        for i in range(0, len(predict)):
+            if i == 0:
+                rate.append(100 * (predict[i] - last_price[-1])/last_price[-1])
+            else:
+                rate.append(100 * (predict[i]-predict[i-1])/predict[i-1])
+        return rate
