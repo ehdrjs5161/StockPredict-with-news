@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 import pandas as pd
 import json
 from collections import OrderedDict
@@ -15,32 +15,29 @@ def api():
         'completed': False
     }
 
-@app.route('/code=<code>', methods=['GET', 'POST'])
+@app.route('/code/<code>', methods=['GET', 'POST'])
 def predict(code):
-    file_path = "./json_result/" + code
+    file_path = "./json_result/withNews/" + code + ".json"
     # if not os.path.isfile(./json_result/"+code):
-    if os.path.isfile("./json_result/"+code):
+    if os.path.isfile("./json_result/withNews/"+code+".json"):
         print("Save")
         kospi = pd.read_csv("file/KOSPI200.csv")[['종목코드', '기업명']]
         name = method.code_to_name(kospi, code)
         comp = company.companys(name=name, code=code)
         comp.load_data()
-        print(comp.news)
-        # print
         # comp.update_data()
-
-        # comp.model_setting(10, 28, 2)
+        comp.model_setting(10, 28, 3)
         # comp.predict_price_day1()
         # comp.predict_price_day7()
         # comp.result_save()
 
     with open(file_path, "r") as json_file:
         result = json.load(json_file)
-    return result
+    return result["{}".format(code)]
 
 @app.route('/rank', methods=['GET', 'POST'])
 def rank():
-    file_path = "json_result/rank.json"
+    file_path = "json_result/withNews/Rank.json"
     if os.path.isfile(file_path):
         with open(file_path, "r") as json_file:
             result = json.load(json_file)
@@ -49,4 +46,6 @@ def rank():
 
 
 if __name__ == "__main__":
-    predict("068270")
+    result = predict("068270")
+    # result = rank()
+    # print(result)

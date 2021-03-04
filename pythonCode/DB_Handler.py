@@ -9,7 +9,7 @@ class DBHandler:
     def insert_item(self, data, db_name=None, collection_name=None):
         pass
 
-    def insert_items(self, datas, db_name=None, collection_name=None):
+    def insert_items(self, data, db_name=None, collection_name=None):
         pass
 
     def find_item(self, data, db_name=None, collection_name=None):

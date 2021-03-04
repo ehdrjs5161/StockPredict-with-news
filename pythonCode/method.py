@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import datetime
 import os
@@ -33,8 +34,9 @@ def load_data(company):
             price.to_csv("price/"+code+'.csv', encoding="UTF-8")
         if not os.path.isfile("news/"+code+".csv"):
             today = method.date_to_str(datetime.datetime.today())
-            news = getNews(company.name, begin="2012-01-01", end=today)
-        news = pd.read_csv("news/"+code+".csv", encoding="utf-8")[['Date', 'Title', 'Url']]
+            news = getNews.crawling(company.name, begin="2012-01-01", end=today)
+            news.to_csv("news/"+code+".csv", encoding="UTF-8")
+        news = pd.read_csv("news/"+code+".csv", encoding="utf-8")[['Date', 'Title', 'Label']]
         price = pd.read_csv("price/"+code+".csv", encoding="utf-8")[['Date', 'High', 'Low', 'Open', 'Close', 'Volume']]
 
         return news, price
@@ -74,14 +76,13 @@ def day_range(begin, end):
 def news_union(code):
     news = pd.DataFrame()
     for i in range(1, 6):
-        temp = pd.read_csv("./crawlingBatch/temporary_news/"+code+"_"+str(i)+".csv")[['Date', "Title", 'Url']]
+        temp = pd.read_csv("./crawlingBatch/temporary_news/"+code+"_"+str(i)+".csv")[['Date', "Title"]]
         news = pd.concat([news, temp])
 
     return news
 
 def merge(news, price, col1, col2):
     data = pd.merge(price, news, left_on="{}".format(col1), right_on="{}".format(col2))
-    data.drop([col2], axis='columns', inplace=True)
     return data
 
 def re_sizing(batch_size, data):
@@ -99,7 +100,7 @@ def inverseTransform(Scaler, normed_data):
     for i in range(0, len(normed_data)):
         temp = []
         for j in range(0, len(normed_data[0])):
-            temp.append(Scaler.inverse_transform([[normed_data[i][j], 0]])[0][0])
+            temp.append(Scaler.inverse_transform([[normed_data[i][j], 0, 0]])[0][0])
         real_data.append(temp)
     return real_data
 
@@ -108,7 +109,7 @@ def inverseTransform_day7(Scaler, normed_data):
     for i in range(0, len(normed_data)):
         temp = []
         for j in range(0, len(normed_data[0])):
-            temp.append(Scaler.inverse_transform([[normed_data[i][j], 0]])[0][0])
+            temp.append(Scaler.inverse_transform([[normed_data[i][j], 0, 0]])[0][0])
         real_data.append(temp)
 
     return real_data
@@ -125,3 +126,28 @@ def rate(last_price, predict, day):
             else:
                 rate.append(100 * (predict[i]-predict[i-1])/predict[i-1])
         return rate
+
+def sent_result(frame):
+    frame = np.array(frame)
+    cnt = 1
+    sum = frame[0][1]
+
+    date = []
+    label = []
+
+    for j in range(len(frame) - 1):
+        temp = frame[j + 1][1]
+        if frame[j][0] == frame[j + 1][0]:
+            cnt += 1
+            sum += temp
+        else:
+            date.append(frame[j][0])
+            label.append(sum / cnt)
+            cnt = 1
+            sum = frame[j][1]
+        if j == len(frame) - 2:
+            date.append(frame[j][0])
+            label.append(sum / cnt)
+
+    result = pd.DataFrame({'Date': date, 'Label': label})
+    return result

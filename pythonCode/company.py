@@ -25,8 +25,6 @@ class companys:
     def load_data(self):
         self.news, self.price = method.load_data(self)
         self.update_day = self.news['Date'].iloc[-1]
-        self.news = sent.labeling(self)
-        # self.news = NLP.predict(self.news)
         self.news.to_csv("news/processed_news/"+str(self.code)+".csv", encoding="UTF-8")
         print(self.update_day)
 
@@ -42,7 +40,7 @@ class companys:
             print("Update News & Price")
             begin = self.update_day + datetime.timedelta(days=1)
             self.newNews = getNews.crawling(name=self.name, begin=method.date_to_str(begin), end=method.date_to_str(yesterday))
-            print(self.newNews)
+            self.newNews = sent.labeling(self.newNews)
             self.news = pd.concat([self.news, self.newNews])
             self.news.reset_index(drop=True, inplace=True)
             self.news.to_csv("news/"+self.code+".csv", encoding="UTF-8")
@@ -61,7 +59,7 @@ class companys:
 
     def model_setting(self, batch, term, features):
         self.features = features
-        if not os.path.isfile("model/"+self.code+"/saved_model.pb"):
+        if not os.path.isfile("model/withNews/"+self.code+"/saved_model.pb"):
             print("predict 1 day Model Compiling...")
             self.model_day1 = modeling.modeling(batch, term, self.features)
             self.model_day1 = modeling.model_educate(self, term, batch, 1)
@@ -69,7 +67,7 @@ class companys:
         else:
             self.model_day1 = modeling.load_model(self.code, predict_day=1)
 
-        if not os.path.isfile("model_day7/"+self.code+"/saved_model.pb"):
+        if not os.path.isfile("model_day7/withNews/"+self.code+"/saved_model.pb"):
             print("predict 7 days Model Compiling...")
             self.model_day7 = modeling.modeling_day7(batch, term, self.features)
             self.model_day7 = modeling.model_educate(self, term, batch, 7)
@@ -83,43 +81,83 @@ class companys:
     def predict_price_day7(self):
         self.result_day7 = modeling.predict_day7(self)
 
+    def test_predict_day1(self):
+        modeling.test_day1(self)
+
+    def test_predict_day7(self):
+        modeling.test_day7(self)
+
     def model_update(self):
         # 한번 모델링 해놓으면 당분간 안해도 됨.
         self.model_day1, self.model_day7 = modeling.update_model(self)
         print("Model Update Completed!")
 
     def result_save(self):
-        file_path = "./json_result/" + self.code
+        file_path = "./json_result/withNews/" + self.code +".json"
+        rank_path = "./json_result/withNews/Rank.json"
+
+        company = OrderedDict()
         result = OrderedDict()
-        price_temp = OrderedDict()
-        result["code"] = self.code
-        result["name"] = self.name
+        company["name"] = self.name
+        company["code"] = self.code
+
         temp = []
         for i in range(0, len(self.result_day1['Time'])):
             price = {'Date': '{}'.format(self.result_day1['Time'][i]),
                      'Price': '{}'.format(int(self.result_day1['Price'][i]))}
             temp.append(price)
-        price_temp['day1'] = temp
+        company['price_day1'] = temp
 
         temp = []
         for i in range(0, len(self.result_day7['Time'])):
             price = {'Date': '{}'.format(self.result_day7['Time'][i]),
                      'Price': '{}'.format(int(self.result_day7['Price'][i]))}
             temp.append(price)
-        price_temp['day7'] = temp
-        result['price'] = price_temp
+        company['price_day7'] = temp
+
+        company['predict_day1'] = int(self.result_day1['Predict'][0][0])
 
         temp = []
         for i in range(0, len(self.result_day7['Predict'][0])):
             predict = {'Date': '{}'.format(str(i + 1) + " day After"),
                        'Price': '{}'.format(int(self.result_day7["Predict"][0][i]))}
             temp.append(predict)
-        result['predict'] = {'day1': '{}'.format(int(self.result_day1['Predict'][0][0])), 'day7': temp}
-        result = json.dumps(result, ensure_ascii=False, indent="\t")
-        with open(file_path, "w") as outfile:
-            json.dump(result, outfile, indent="\t")
+            
+        company['predict_day7'] = temp
 
-        rate_result = OrderedDict()
-        rate_result['code'] = self.code
-        rate_result['name'] = self.code
+        rate = OrderedDict()
+        last_price1 = self.result_day1['Price'][-1]
+        rate1 = 100 * (company['predict_day1'] - last_price1) / last_price1
+        rate['predict_rate1'] = round(rate1, 2)
+
+        temp = []
+        for i in range(len(self.result_day7['Predict'][0])):
+            if i == 0:
+                rate2 = round(100 * (self.result_day7['Predict'][0][1] - self.result_day7['Price'][-1]) /
+                              self.result_day7['Price'][-1], 2)
+            else:
+                rate2 = round(100 * (self.result_day7['Predict'][0][i] - self.result_day7['Predict'][0][i - 1]) /
+                              self.result_day7['Predict'][0][i - 1], 2)
+            temp.append(rate2)
+        rate['predict_rate2'] = temp
+
+        company['rate'] = rate
+        result['{}'.format(self.code)] = company
+        
+        with open(file_path, "w") as f:
+            json.dump(result, f, indent="\t")
+
+        if os.path.isfile(rank_path):
+            rank = OrderedDict()
+        else:
+            with open(rank_path, "r") as f:
+                rank = json.load(f)
+
+        rank['{}'.format(self.code)] = rate
+        print(rank)
+
+        with open(rank_path, "w") as rank_file:
+            json.dump(rank, rank_file, indent="\t")
+
+
 

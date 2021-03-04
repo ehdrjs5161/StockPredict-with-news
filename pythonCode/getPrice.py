@@ -18,29 +18,24 @@ def market_info (code, begin):
     today = datetime.datetime.today().strftime("%Y%m%d")
     market = pd.DataFrame()
     code = method.set_code(code)
+    marekt = stock.get_market_fundamental_by_date()
     print(code)
-    if os.path.isfile("./market_info/" + code + ".csv"):
+    if os.path.isfile("../market_info/" + code + ".csv"):
         market = pd.read_csv("./market_info/" + code + ".csv", encoding="UTF-8")
         last_day = datetime.datetime.strptime(market.iloc[-1]['날짜'], "%Y-%m-%d")
         last_day = datetime.datetime.strftime(last_day, "%Y%m%d")
-        print(last_day, today, code)
-        print(type(last_day), type(today), type(code))
         temp = stock.get_market_fundamental_by_date(last_day, today, code)
         market = pd.concat([market, temp])
     else:
         date = begin.replace("-", "")
-        print(date, today, code)
-        print(type(date), type(today), type(code))
         temp = stock.get_market_fundamental_by_date(date, today, code)
         market = pd.concat([market, temp])
-
     return market
 
 
-# if __name__ =="__main__":
-#     kospi200 = pd.read_csv("./file/KOSPI200.csv", encoding="UTF-8")[['종목코드', '기업명']]
-#     name = "셀트리온"
-#     code = method.search_code(name, kospi200)
-#     for code, name in zip(kospi200['종목코드'], kospi200['기업명']):
-#         price = stock_price(code, begin="2012-01-01")
-#         price.to_csv("./price/"+method.set_code(code)+".csv", encoding="cp949")
+if __name__ =="__main__":
+    kospi200 = pd.read_csv("../file/KOSPI200.csv", encoding="UTF-8")[['종목코드', '기업명']]
+    for code, name in zip(kospi200['종목코드'], kospi200['기업명']):
+        market = market_info(code, "20120101")
+        market.to_csv("../market_info/"+method.set_code(code)+".csv", encoding="UTF-8")
+        print(method.set_code(code)+"'s market_info completed")

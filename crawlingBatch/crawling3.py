@@ -6,6 +6,22 @@ from pythonCode import method
 import re
 from bs4 import BeautifulSoup
 
+def set_code(code):
+    code = str(code)
+    if len(code) < 6:
+        for j in range(0, 6 - len(code)):
+            code = '0' + code
+    return code
+
+def search_code(company, frame):
+    codes = []
+    name = company
+    code = frame['기업명'] == name
+    code = list(frame['종목코드'][code])
+    codes.append(code[0])
+    code = set_code(str(codes[0]))
+
+    return code
 
 def day_range(begin, end):
     day_list = []

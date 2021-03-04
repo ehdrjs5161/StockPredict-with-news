@@ -1,14 +1,13 @@
 import pandas as pd
 import codecs
 import re
-from konlpy.tag import Okt
 
 def set_word_list():
     positive = []
     negative = []
     total = []
-    # pos = codecs.open("file/NLP/positive_words_self.txt", 'rb', encoding="UTF-8")
-    pos = codecs.open("../file/NLP/positive_words_self.txt", 'rb', encoding="UTF-8")
+    pos = codecs.open("file/NLP/positive_words_self.txt", 'rb', encoding="UTF-8")
+    # pos = codecs.open("../file/NLP/positive_words_self.txt", 'rb', encoding="UTF-8")
 
     while True:
         line = pos.readline()
@@ -20,9 +19,9 @@ def set_word_list():
             break
     pos.close()
 
-    # neg = codecs.open("file/NLP/negative_words_self.txt", 'rb', encoding="UTF-8")
-    neg = codecs.open("../file/NLP/negative_words_self.txt", 'rb', encoding="UTF-8")
-
+    neg = codecs.open("file/NLP/negative_words_self.txt", 'rb', encoding="UTF-8")
+    # neg = codecs.open("../file/NLP/negative_words_self.txt", 'rb', encoding="UTF-8")
+    #
     while True:
         line = neg.readline()
         line = line.replace("\n", "")
@@ -61,9 +60,7 @@ def classify(sent):
     else:
         return 1
 
-def labeling(company):
-    news = company
-    # news = company.news
+def labeling(news):
     pos, neg, total= set_word_list()
     label = []
     titles = news['Title']
@@ -74,10 +71,3 @@ def labeling(company):
         label.append(classify(sent))
     news = pd.DataFrame({'Date': news['Date'], 'Title': titles, 'Label': label})
     return news
-
-
-data = pd.read_csv("../news/068270.csv")[['Date', 'Title']]
-# data = data[:int(len(data))]
-news = labeling(data)
-news.to_csv("../analysis.csv", encoding="UTF-8")
-print(news)

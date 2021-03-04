@@ -6,6 +6,23 @@ from pythonCode import method
 from bs4 import BeautifulSoup
 import re
 
+def set_code(code):
+    code = str(code)
+    if len(code) < 6:
+        for j in range(0, 6 - len(code)):
+            code = '0' + code
+    return code
+
+def search_code(company, frame):
+    codes = []
+    name = company
+    code = frame['기업명'] == name
+    code = list(frame['종목코드'][code])
+    codes.append(code[0])
+    code = set_code(str(codes[0]))
+
+    return code
+
 def day_range(begin, end):
     day_list = []
     begin = datetime.datetime.strptime(begin, "%Y.%m.%d")
@@ -64,11 +81,12 @@ def crawling(name, begin, end):
 
 if __name__ == "__main__":
     kospi = pd.read_csv("../file/KOSPI200.csv")[['종목코드', '기업명']]
+    kospi = kospi.iloc[166:]
     names = list(kospi['기업명'])
+    print(names)
     for name in names:
-        if name == "삼성전자":
-            code = method.search_code(name, kospi)
-            result = crawling(name=name, begin="2012-01-01", end="2012-12-31")
-            result.to_csv("./temporary_news/"+code+"_01.csv", encoding="utf-8")
-            print(code, "  ", name, "Completed!")
-        time.sleep(0.01)
+        code = search_code(name, kospi)
+        print(code)
+        result = crawling(name=name, begin="2012-01-01", end="2012-12-31")
+        result.to_csv("./temporary_news/" + code + "_02.csv", encoding="utf-8")
+        print(code, "  ", name, "Completed!")
