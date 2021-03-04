@@ -19,8 +19,7 @@ def api():
 def predict(code):
     file_path = "./json_result/withNews/" + code + ".json"
     # if not os.path.isfile(./json_result/"+code):
-    if os.path.isfile("./json_result/withNews/"+code+".json"):
-        print("Save")
+    if not os.path.isfile("./json_result/withNews/"+code+".json"):
         kospi = pd.read_csv("file/KOSPI200.csv")[['종목코드', '기업명']]
         name = method.code_to_name(kospi, code)
         comp = company.companys(name=name, code=code)
