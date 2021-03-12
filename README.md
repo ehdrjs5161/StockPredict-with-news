@@ -24,10 +24,10 @@
 * 창원대학교 적응지능연구실(AIR)에서 제공한 긍/부정 감성사전을 이용하여 뉴스의 헤드라인을 긍정, 중립, 부정으로 분류
 
   
-# 딥러닝 모델 (Deep Learning Model)
+# 딥러닝 (Deep Learning)
  
-* 딥러닝 모델 Features 선정 방법: 상관계수, VIF(Variance Inflation Factor) 사용
+* 딥러닝의 Features 선정 방법: 상관계수, VIF(Variance Inflation Factor) 사용
 
-* TensorFlow의 케라스를 이용한 LSTM 기반으로 이전 28일의 종가, 거래량, 뉴스 감성분석 값을 Features로 하여 다음 날의 종가를 예측
+* TensorFlow의 케라스를 이용한 LSTM 기반으로 이전 28일의 종가, 거래량, 뉴스 감성분석 값을 Features로 하여 다음 개장일, 향 후 7일 개장일의 종가를 예측
 
 
