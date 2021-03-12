@@ -28,6 +28,6 @@
  
 * 딥러닝의 Features 선정 방법: 상관계수, VIF(Variance Inflation Factor) 사용
 
-* TensorFlow의 케라스를 이용한 LSTM 기반으로 이전 28일의 종가, 거래량, 뉴스 감성분석 값을 Features로 하여 다음 개장일, 향 후 7일 개장일의 종가를 예측
+* 케라스를 이용한 LSTM 기반으로 이전 28일의 종가, 거래량, 뉴스 감성분석 값을 Features로 하여 다음 개장일, 향 후 7일동안의 종가를 예측
 
 
