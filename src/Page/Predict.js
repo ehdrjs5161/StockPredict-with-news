@@ -1,23 +1,11 @@
 import React, {useState, useEffect} from 'react';
-import {LineChart, Line, YAxis, XAxis, CartesianGrid, Tooltip, Legend} from 'recharts';
-import {Link} from 'react-router-dom';
-import Rank from '../Components/Rank';
+import Chart from '../Components/Chart';
+import Info from "../Components/Info";
 import Button from "@material-ui/core/Button";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
 
 function Predict ({match}) {
-    const [inititalData, setinitialData] = useState([{
-        code: "",
-        name: "",
-        predict_day1: 0,
-        predict_day7: [{}],
-        price_day1: [{}],
-        price_day7: [{}],
-        rate: {
-            predict_rate1: 0,
-            predict_rate2: []
-        }
-    }])
+    const [inititalData, setinitialData] = useState([{}])
     
     useEffect(() => {
         fetch(`/code/${match.params.code}`).then(
@@ -25,32 +13,19 @@ function Predict ({match}) {
         ).then(data=>setinitialData(data))
     },[]);
 
-    const dataDay1 = inititalData['price_day1'];
-    const dataDay7 = inititalData['price_day7'];
-    const predictDay1 = inititalData['predict_day1'];
-    const predictDay7 = inititalData['predict_day7'];
+    const data = inititalData;
+    const predictDay1 = data['predict_day1'];
     
     return (
         <div>
-            <h1>{inititalData.code} {inititalData.name}</h1>
+            <Info code={data['code']} name = {data['name']} price={data['pre_close']} rate={data['pre_rate']} differ = {data['price_differ']}/>
             <ButtonGroup size="large" color="primary" aria-label="large outlined primary button group">
-                <Button> 전체 가격</Button>
-                <Button onClick={()=>{alert("hhhh")}}>1일 예측</Button>
-                <Button onClick={()=> {alert("tttt")}}>7일 예측</Button>
+                <Button>전체 가격</Button>
+                <Button>1일 예측</Button>
+                <Button>7일 예측</Button>
             </ButtonGroup>
-            <LineChart width={1200}
-                height={500}
-                data = {dataDay1}
-            >
-                <CartesianGrid strokeDasharray=""/>
-                <YAxis yAxisId="right" orientation="right"/>
-                <YAxis dataKey="Price"/>
-                <XAxis dataKey="Date"/>
-                <Tooltip/>
-                <Legend/>
-                <Line type="monotone" dataKey="Price" stroke="#8884d8" activeDot="r:8"/>
-            </LineChart>
-            <h1> 다음 개장일의 예측 가격은 {predictDay1}</h1>
+            <Chart data = {data['price_day1']}/>
+            <b> 다음 개장일의 예측 종가: {predictDay1} KRW </b>
         </div>
     )
 }

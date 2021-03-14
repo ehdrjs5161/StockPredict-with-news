@@ -1,6 +1,4 @@
 import './App.css';
-import React, {useState, useEffect} from 'react';
-import Company from './Components/Company.js';
 import {Route} from 'react-router-dom';
 import {Home, Predict} from './Page';
 function App() {

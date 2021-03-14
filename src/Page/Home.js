@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {Route} from 'react-router-dom';
-
+import Search from "../Components/Search";
 const Home = () => {
     const [input, setInput] = useState('');
     const onChange = (e) => {
@@ -13,12 +13,7 @@ const Home = () => {
 
     return (
         <div className="App">
-            <h1>Ant: Stock Predict Service</h1>
-            <input onChange={onChange} value={input}/>
-            <button onChange={goPage}>Search</button>
-            <div>
-                <p>result: {input}</p>
-            </div>
+            <Search/>
         </div>
     );
 };

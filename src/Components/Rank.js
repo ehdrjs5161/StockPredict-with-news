@@ -1,6 +1,4 @@
 import { React, useEffect, useState, Component } from 'react';
-import { rate } from '../Components/Rate';
-
 function Rank() {
   const [data, setData] = useState([{}]);
   
@@ -9,7 +7,7 @@ function Rank() {
       response => response.json([])
     ).then(data=>setData(data))
   },[{}]);
-
+  const rank = data['068270'];
   console.log(rank);
   return(
     <div>
